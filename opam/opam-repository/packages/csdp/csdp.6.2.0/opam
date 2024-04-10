@@ -10,17 +10,19 @@ synopsis: "Solver for semidefinite programming problems"
 description: """
 CSDP is a library of routines that implements a predictor corrector variant of
 the semidefinite programming algorithm. It is written in C for efficiency and runs
-in parallel on shared memory multi-processor systems. 
+in parallel on shared memory multi-processor systems.
 See also the conf-csdp opam package (for distributions that provide csdp)
 """
 authors: [
-  "Brian Borchers <borchers@nmt.edu>"  
-  "Joseph Young <josyoun@nmt.edu>"        
-  "Aaron Wilson  <wilson@nmt.edu>"  
+  "Brian Borchers <borchers@nmt.edu>"
+  "Joseph Young <josyoun@nmt.edu>"
+  "Aaron Wilson  <wilson@nmt.edu>"
 ]
-depends: [ "conf-gcc" "conf-gfortran" "conf-openblas" "conf-lapack" ]
+# TODO vérifier que ça fonctionne sans "conf-gfortran"
+depends: [ "conf-gcc" "conf-openblas" "conf-lapack" ]
+# TODO blas vs. openblas ?
 build: [
-  ["sed" "-i.bak" "Makefile" "-e" "/export LIBS=/{s/-lblas/-lopenblas/;s/-static//}"]
+  ["sed" "-e" "/export LIBS=/s/-lblas/-lopenblas/" "-e" "/export LIBS=/s/-static//" "-i.bak" "Makefile"]
   [make]
   [make "unitTest"] {with-test}
 ]
@@ -28,4 +30,3 @@ url {
   src: "https://github.com/coin-or/Csdp/archive/refs/tags/releases/6.2.0.tar.gz"
   checksum: "sha256=3d341974af1f8ed70e1a37cc896e7ae4a513375875e5b46db8e8f38b7680b32f"
 }
-
