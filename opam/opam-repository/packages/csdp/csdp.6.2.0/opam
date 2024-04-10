@@ -18,12 +18,10 @@ authors: [
   "Joseph Young <josyoun@nmt.edu>"
   "Aaron Wilson  <wilson@nmt.edu>"
 ]
-# TODO vérifier que ça fonctionne sans "conf-gfortran"
 depends: [ "conf-gcc" "conf-openblas" "conf-lapack" ]
-# TODO blas vs. openblas ?
 build: [
   ["sed" "-e" "/export LIBS=/s/-lblas/-lopenblas/" "-e" "/export LIBS=/s/-static//" "-i.bak" "Makefile"]
-  [make]
+  [make "CC=gcc" {os = "macos"}]
   [make "unitTest"] {with-test}
 ]
 url {
