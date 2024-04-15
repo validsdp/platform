@@ -18,10 +18,23 @@ authors: [
   "Joseph Young <josyoun@nmt.edu>"
   "Aaron Wilson  <wilson@nmt.edu>"
 ]
-depends: [ "conf-gcc" "conf-openblas" "conf-lapack" ]
+depends: [
+  "conf-gcc"
+  "conf-lapack"
+  "conf-openblas" {os != "macos"}
+]
+depexts: [
+  ["libomp"] {os = "macos" & os-distribution = "homebrew"}
+]
 build: [
+  # Use openblas (which seems available on most distributions), and remove -static
   ["sed" "-e" "/export LIBS=/s/-lblas/-lopenblas/" "-e" "/export LIBS=/s/-static//" "-i.bak" "Makefile"]
-  [make "CC=gcc" {os = "macos"}]
+  # Remove -ansi to avoid "error: unknown type name 'inline'" on freebsd and macos
+  ["sed" "-e" "/export CFLAGS=/s/-ansi//" "-i.bak" "Makefile"] {os = "freebsd" | os = "macos"}
+  # Use homebrew's libomp to avoid "error: unsupported option '-fopenmp'" on macos
+  # https://github.com/Macaulay2/homebrew-tap/blob/main/Formula/csdp.rb
+  ["sed" "-e" "/export CFLAGS=/s|-fopenmp|-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include|" "-e" "/export LIBS=/s|-lopenblas|-L/opt/homebrew/lib/ -lomp -framework Accelerate|" "-i.bak" "Makefile"] {os = "macos" & os-distribution = "homebrew"}
+  [make]
   [make "unitTest"] {with-test}
 ]
 url {
