@@ -27,13 +27,16 @@ depexts: [
   ["libomp"] {os = "macos" & os-distribution = "homebrew"}
 ]
 build: [
+  # Add stdio.h (missing in 6.2.0 git tag)
+  # cf. https://github.com/coin-or/Csdp/blob/0dcf187a159c365b6d4e4e0ed5849f7b706da408/lib/user_exit.c#L16
+  ["sed" "-e" "16i\\\n#include <stdio.h>" "-i.bak" "lib/user_exit.c"]
   # Use openblas (which seems available on most distributions), and remove -static
   ["sed" "-e" "/export LIBS=/s/-lblas/-lopenblas/" "-e" "/export LIBS=/s/-static//" "-i.bak" "Makefile"]
   # Remove -ansi to avoid "error: unknown type name 'inline'" on freebsd and macos
   ["sed" "-e" "/export CFLAGS=/s/-ansi//" "-i.bak" "Makefile"] {os = "freebsd" | os = "macos"}
   # Use homebrew's libomp to avoid "error: unsupported option '-fopenmp'" on macos
   # https://github.com/Macaulay2/homebrew-tap/blob/main/Formula/csdp.rb
-  ["sed" "-e" "/export CFLAGS=/s|-fopenmp|-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include|" "-e" "/export LIBS=/s|-lopenblas|-L/opt/homebrew/lib/ -lomp -framework Accelerate|" "-i.bak" "Makefile"] {os = "macos" & os-distribution = "homebrew"}
+  ["sed" "-e" "/export CFLAGS=/s|-fopenmp|-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include|" "-e" "/export LIBS=/s|-lopenblas|-L/opt/homebrew/opt/libomp/lib/ -lomp -framework Accelerate|" "-i.bak" "Makefile"] {os = "macos" & os-distribution = "homebrew"}
   [make]
   [make "unitTest"] {with-test}
 ]
